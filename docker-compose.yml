@@ -1,0 +1,40 @@
+services:
+  web:
+    build: .
+    image: deepspace-cal:latest
+    container_name: calibration-web
+    # 宿主端口可配置：在 .env 或 shell 中设置 HOST_PORT，默认 8080。
+    ports:
+      - "${HOST_PORT:-8080}:8080"
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "8080"
+      DB_PATH: "/data/calibration.db"
+    volumes:
+      - cal-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8080/healthz',timeout=3).status==200 else 1)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 3s
+
+  verify:
+    image: deepspace-cal:latest
+    build: .
+    profiles: ["verify"]
+    depends_on:
+      web:
+        condition: service_healthy
+    environment:
+      BASE_URL: "http://web:8080"
+      QUIET: "1"
+    # 页面与健康响应可用后执行：代码测试（幂等重传、冲突隔离、
+    # 页面构建可用）+ API/HTTP 冒烟（健康、并发封签唯一、重启恢复），
+    # 完成即退出，退出码即验收结论。
+    entrypoint: ["python", "tests/verify.py"]
+
+volumes:
+  cal-data:

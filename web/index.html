@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>深空辐照标定 · 批次封签控制台</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header>
+    <h1>深空辐照标定 · 批次封签控制台</h1>
+    <p class="sub">多站复测投票 → 原子冻结 → 阈值封签（不可变证书）</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>1 · 配置批次</h2>
+      <form id="config-form" autocomplete="off">
+        <label>批次标识
+          <input name="batch_id" required placeholder="DSCOVR-2026-001"
+                 pattern="[A-Za-z0-9][A-Za-z0-9.__-]{0,63}">
+        </label>
+        <label>固定站点名单（逗号或换行分隔，冻结后不可改）
+          <textarea name="stations" rows="2" required
+            placeholder="S-BEIJING, S-KERGUELEN, S-MC-MURDO"></textarea>
+        </label>
+        <label>封签阈值（赞成站数）
+          <input name="threshold" type="number" min="1" value="2" required>
+        </label>
+        <button type="submit">创建批次</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>2 · 站点提交摘要 / 稳定投票</h2>
+      <form id="vote-form" autocomplete="off">
+        <div class="grid2">
+          <label>批次标识
+            <input name="batch_id" required placeholder="DSCOVR-2026-001">
+          </label>
+          <label>站点
+            <input name="station" required placeholder="S-BEIJING">
+          </label>
+        </div>
+        <label>稳定投票标识 vote_id（同摘要重传须保持不变）
+          <input name="vote_id" required placeholder="vote-20261004-0001">
+        </label>
+        <label>标定摘要 summary
+          <textarea name="summary" rows="2" required
+            placeholder="SHA-256: 9f2c... 或站点标定读数指纹"></textarea>
+        </label>
+        <button type="submit">提交投票</button>
+      </form>
+      <div id="vote-feedback" class="feedback" role="status"></div>
+    </section>
+
+    <section class="card">
+      <h2>3 · 批次实况</h2>
+      <div class="row">
+        <label class="grow">查看批次
+          <input id="watch-id" placeholder="DSCOVR-2026-001">
+        </label>
+        <button id="watch-btn">开始轮询</button>
+      </div>
+
+      <div id="state" class="state empty">尚未载入批次。</div>
+    </section>
+  </main>
+
+  <footer>
+    <span id="poll-indicator">○ 未轮询</span>
+    <span>页面仅以服务端版本号/状态推进渲染，过期响应不会回退封存结果。</span>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
